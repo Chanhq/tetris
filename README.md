@@ -121,13 +121,11 @@ This is a education project to learn how to code in C.
 - Anzeigen des Hintergrunds
 - Anzeigen der Statistiken
 - Anzeigen des nächsten Blocks an der richtigen Position
-
-* Anzeigen des Spielfelds (Schwarzes Rechteck)
-* Anzeigen aller anderen, schon heruntergefallenen Blöcke
-* Anzeigen des aktuellen Blocks
-* Anzeigen eines Rechtecks
-
-* Umwandeln von In-Game-Koordinaten in Fensterkoordinaten
+- Anzeigen des Spielfelds (Schwarzes Rechteck)
+- Anzeigen aller anderen, schon heruntergefallenen Blöcke
+- Anzeigen des aktuellen Blocks
+- Anzeigen eines Rechtecks
+- Umwandeln von In-Game-Koordinaten in Fensterkoordinaten
 
 
 # Zentrale (strukturierte) Datentypen
