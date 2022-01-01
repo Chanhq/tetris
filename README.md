@@ -1,5 +1,5 @@
 # simple-tetris-game-in-c
-This is a education project to learn how to code in C.
+Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt, in dem wir im 3er-Team unsere Skills zeigen sollen.
 
 
 # Important links
