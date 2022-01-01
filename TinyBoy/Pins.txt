@@ -1,0 +1,23 @@
+TetrisBoy
+
+
+Anschlüsse: 
+1: VCC
+2: GND
+3: RESET
+4: MOSI
+5: MISO
+6: SCLK
+
+
+Knöpfe: 
+- Links: PB2
+- Rechts: PA7
+
+- Oben: PA2
+- Unten: PA1
+
+
+Display:
+- SCL: SCK bzw. PA4
+- SDA: MOSI bzw. PA6
