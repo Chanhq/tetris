@@ -77,13 +77,38 @@ This is a education project to learn how to code in C.
 
 # Notwendiges Design / Funktionen
 
-## Programmstruktur/Aufbau des Programms
+## Programmstruktur / Aufbau des Programms
 
-
+1. Bibliotheken einbinden
+2. Variablen, Strukturen, Funktionen deklarieren
+3. Main-Funktion beginnt
+    1. Musik-Datei laden und im Loop starten
+    2. Zeit-Stempel erzeugen
+    3. Game-Loop
+        - Fenster-Befehle abfragen
+            - Wenn der Schließen-Knopf gedrückt wird: Schließen
+        - Keyboard-Befehle abfragen
+            - Wenn W gedrückt: Drehen im Uhrzeigersinn
+            - Wenn A gedrückt: Wenn Platz da: Nach links bewegen
+            - Wenn D gedrückt: Wenn Platz da: Nach rechts bewegen
+            - Wenn S gedrückt: Schneller nach unten bewegen
+        - Anderen Zeitstempel erzeugen
+        - Wenn die Differenz des ersten Zeitstempels vom zweiten Zeitstempel eine bestimmte Größe übersteigen
+            - Setze den ersten Zeitstempel auf den zweiten Zeitstempel
+            - Wenn Teil nach unten bewegen möglich:
+                - Blöcke des Teils nach unten bewegen
+            - Ansonsten
+                - Teil "festmachen"
+                - Wenn Platz für neuen Block
+                    - Neuen Block generieren
+                - Ansonsten
+                    - (vorerst) beenden
+        - Fenster graphisch updaten
+4. Funktionen definieren
 
 ## Wichtigste Funktionen und ihre Signatur (Parameter und Rückgabewert)
 
-Ingame-Management
+### Ingame-Management
 - Rotation der Blöcke
 - Randomisierung / Erstellen neuer Blöcke inkl. Farbe
 - Checken der Blockkollision
@@ -92,7 +117,7 @@ Ingame-Management
 - Zeile löschen
 - Verwalten der Tastatureingaben
 
-Fenster- & Grafik-Management
+### Fenster- & Grafik-Management
 - Anzeigen des Hintergrunds
 - Anzeigen der Statistiken
 - Anzeigen des nächsten Blocks an der richtigen Position
@@ -107,21 +132,26 @@ Fenster- & Grafik-Management
 
 # Zentrale (strukturierte) Datentypen
 
-Ingame-Management
-- Speicherung der Variationen jedes Blocks
-- Speicherung der festen Blöcke im Spielfeld
-- Speicherung des nächsten Blocks
-- Speicherung des aktuellen Blocks
-- Speicherung der Position des aktuellen Blocks
-- Speicherung des Scores
-- Speicherung der Schwierigkeit
-- Speicherung der Zeitabstände
-- Speicherung der aktuellen Zeit, seit dem das Spiel gestartet wurde
-- Speicherung der Farben
+## Strukturen
+- Block (Farbe, Position, etc.)
+- evtl. Fenster
 
-Fenster-Management
-- Speicherung der Fensterbreite
-- Speicherung der Fensterhöhe
-- Speicherung der Blockbreite (hoch = breit, da quadratisch)
-- Speicherung der Position des Spielfelds im Fenster
-- Speicherung der Textart
+## Normale Variablen
+### Ingame-Management
+- Variationen jedes Blocks
+- Festen Blöcke im Spielfeld
+- Nächsten Blocks
+- Aktuellen Blocks
+- Position des aktuellen Blocks
+- Scores
+- Schwierigkeit
+- Zeitabstände
+- Aktuellen Zeit, seit dem das Spiel gestartet wurde
+- Farben
+
+### Fenster-Management
+- Fensterbreite
+- Fensterhöhe
+- Blockbreite (hoch = breit, da quadratisch)
+- Position des Spielfelds im Fenster
+- Textart
