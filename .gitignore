@@ -1,4 +1,8 @@
 *.DS_Store
+._LICENCE
+._SDL Test
+._blatt09.pdf
+
 
 # Prerequisites
 *.d
