@@ -8,7 +8,7 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 - [Old Tetris C Code with too old libraries](http://csourcecodes.blogspot.com/2016/06/tetris-game-c-program-block-game.html)
 
 
-# Planung / Zielsetzung: Vollständiges Tetris-Spiel
+# Planung / Zielsetzung: Tetris!
 
 ## Notwendige Funktionen, damit das Program funktioniert
 - Speicherung der Blockmöglichkeiten
