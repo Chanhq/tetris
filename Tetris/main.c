@@ -5,38 +5,62 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
-#define WIDTH 600
-#define HEIGHT 800
+#define WIDTH 300
+#define HEIGHT 600
+#define maxFPS 20
 
-#define CELLWIDTH WIDTH/10
-#define MAXCELLX WIDTH/CELLWIDTH
-#define MAXCELLY HEIGHT/CELLWIDTH
-#define CELL_COUNT MAXCELLX*MAXCELLY
+#define MAXCELLX 10 //has to be a dividor of WIDTH
+#define MAXCELLY 20 ////has to be a dividor of HEIGHT
 
-#define maxFPS 30
+#define CELLWIDTH 30 //has to be a dividor of WIDTH and HEIGHT
 
-int fallSpeed = 200; // in milliseconds 
+int fallSpeed = 100; // in milliseconds (lower is faster)
 
 int wPressed = 0; //if piece should rotate
 int aPressed = 0; //if piece should go left
 int sPressed = 0; //if piece should go down faster
 int dPressed = 0; //if piece should go right
 
+int field[MAXCELLY][MAXCELLX] = {
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0},
+};
+
+
 SDL_Color backgroundColor = {  0,  0,  0};
 SDL_Color frontColor = {255,0,0};
 
-SDL_Rect currentPieceRect[4];
-SDL_Rect simplePieceRect;
-SDL_Surface* simplePieceSurface;
-SDL_Texture* simplePieceTexture;
+//SDL_Rect currentPieceRect[4];
+SDL_Rect currentPieceRect;
+SDL_Surface* currentPieceSurface;
+SDL_Texture* currentPieceTexture;
+
+SDL_Rect blockRect;
+SDL_Surface* blockSurface;
+SDL_Texture* blockTexture;
+
 
 Uint32 my_callbackfunc(Uint32 interval, void *param) {
     SDL_Event event;
     SDL_UserEvent userevent;
-
-    /* In this example, our callback pushes an SDL_USEREVENT event
-    into the queue, and causes our callback to be called again at the
-    same interval: */
 
     userevent.type = SDL_USEREVENT;
     userevent.code = 0;
@@ -62,10 +86,17 @@ int main(int argc, char *argv[]) {
 
     SDL_ShowCursor(SDL_DISABLE);
 
-    simplePieceRect.x = 0;
-    simplePieceRect.y = 0;
-    simplePieceRect.w = CELLWIDTH;
-    simplePieceRect.h = CELLWIDTH;
+    currentPieceRect.x = 0;
+    currentPieceRect.y = 0;
+    currentPieceRect.w = CELLWIDTH;
+    currentPieceRect.h = CELLWIDTH;
+
+    blockRect.w = CELLWIDTH;
+    blockRect.h = CELLWIDTH;
+
+    printf("CELLWIDTH = %d\n",CELLWIDTH);
+    printf("MAXCELLX = %d\n",MAXCELLX);
+    printf("MAXCELLY = %d\n",MAXCELLY);
 
     int close = 0;
     while (!close) {
@@ -73,28 +104,28 @@ int main(int argc, char *argv[]) {
  
         // Events management
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {close = 1;}
+            if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {close = 1;}
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_W:
                 case SDL_SCANCODE_UP:
                     wPressed = 1;
-                    if (simplePieceRect.y >= CELLWIDTH) {simplePieceRect.y -= CELLWIDTH;}
+                    //if (currentPieceRect.y >= CELLWIDTH) {currentPieceRect.y -= CELLWIDTH;}
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
                     sPressed = 1;
-                    if (simplePieceRect.y + simplePieceRect.h + 1 <= HEIGHT) {simplePieceRect.y += CELLWIDTH;}
+                    //if (currentPieceRect.y + currentPieceRect.h + 1 <= HEIGHT) {currentPieceRect.y += CELLWIDTH;}
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
                     aPressed = 1;
-                    if (simplePieceRect.x >= CELLWIDTH) {simplePieceRect.x -= CELLWIDTH;}
+                    if (currentPieceRect.x >= CELLWIDTH) {currentPieceRect.x -= CELLWIDTH;}
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                dPressed = 1;
-                    if (simplePieceRect.x + simplePieceRect.w + 1 <= WIDTH) {simplePieceRect.x += CELLWIDTH;}
+                    dPressed = 1;
+                    if (currentPieceRect.x + currentPieceRect.w + 1 <= WIDTH) {currentPieceRect.x += CELLWIDTH;}
                     break;
                 }
             } else if (event.type == SDL_KEYUP) {
@@ -117,23 +148,78 @@ int main(int argc, char *argv[]) {
                     break;
                 }
             } else if (event.type == SDL_USEREVENT) {
-                if (simplePieceRect.y + simplePieceRect.h + 1 <= HEIGHT) {simplePieceRect.y += CELLWIDTH;}
+
+                int yPos = currentPieceRect.y/CELLWIDTH;
+                int xPos = currentPieceRect.x/CELLWIDTH;
+
+                int collide = 0;
+                if (yPos +1 == MAXCELLY) {collide = 1;}
+                else {
+                    for (int x = 0; x<MAXCELLX; x++) {
+                        if (field[yPos + 1][x]!=0 && xPos == x) {
+                            collide = 1;
+                            printf("collision on %d,%d \n",x,yPos);
+                        }
+                    }
+                }
+
+                if (collide) {
+                    field[(currentPieceRect.y/CELLWIDTH)][currentPieceRect.x/CELLWIDTH] = 1;
+                    int lineComplete = 1; //true
+                    for (int x = 0; x<MAXCELLX; x++) {
+                        if (field[yPos][x]==0) {lineComplete = 0;} //line isnt complete
+                    }
+                    if (lineComplete) {
+                        printf("Line is complete! Gets deleted.\n");
+                        for (int y = yPos; y>0; y--) {
+                            for (int x = 0; x<MAXCELLX; x++) {
+                                field[y][x] = field[y-1][x];
+                            }
+                        }
+                        for (int x = 0; x<MAXCELLX; x++) {
+                            field[0][x] = 0;
+                        }
+                    }
+                    currentPieceRect.x = (MAXCELLX/2)*CELLWIDTH;
+                    currentPieceRect.y = 0;
+                } else {
+                    currentPieceRect.y += CELLWIDTH;
+                }
+                
+                
+                
                 
             }
         }
 
-        simplePieceSurface = SDL_CreateRGBSurface(0, CELLWIDTH, CELLWIDTH, 32, 0, 0, 0, 0);
-        SDL_FillRect(simplePieceSurface, NULL, SDL_MapRGB(simplePieceSurface->format, 255, 0, 0));
-        simplePieceTexture = SDL_CreateTextureFromSurface(renderer, simplePieceSurface);
-    
- 
+
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, simplePieceTexture, NULL, &simplePieceRect);
+
+        for (int y = 0; y<MAXCELLY; y++) {
+            for (int x = 0; x<MAXCELLX; x++) {
+                
+
+                if (field[y][x] != 0) {      
+                    blockRect.x = x*CELLWIDTH;
+                    blockRect.y = y*CELLWIDTH;
+                    blockSurface = SDL_CreateRGBSurface(0, CELLWIDTH, CELLWIDTH, 32, 0, 0, 0, 0);
+                    SDL_FillRect(blockSurface, NULL, SDL_MapRGB(blockSurface->format, 0, 0, 255));
+                    blockTexture = SDL_CreateTextureFromSurface(renderer, blockSurface);
+                    SDL_RenderCopy(renderer, currentPieceTexture, NULL, &blockRect);
+                }
+            }
+        }
+
+        currentPieceSurface = SDL_CreateRGBSurface(0, CELLWIDTH, CELLWIDTH, 32, 0, 0, 0, 0);
+        SDL_FillRect(currentPieceSurface, NULL, SDL_MapRGB(currentPieceSurface->format, 255, 0, 0));
+        currentPieceTexture = SDL_CreateTextureFromSurface(renderer, currentPieceSurface);
+        
+        SDL_RenderCopy(renderer, currentPieceTexture, NULL, &currentPieceRect);
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / maxFPS); // calculates to 60 fps
     }
  
-    SDL_FreeSurface(simplePieceSurface);
+    SDL_FreeSurface(currentPieceSurface);
     SDL_DestroyRenderer(renderer); // destroy renderer
     SDL_DestroyWindow(window); // destroy window
     SDL_Quit(); // close SDL
