@@ -18,19 +18,19 @@ int h = 0;
 int s = 100;
 int v = 100;
 
-char rString[3]; 
-char gString[3]; 
-char bString[3];
-char label[11]; 
+int textWidth, textHeight;
 
 SDL_Color black = {  0,  0,  0};
 SDL_Color white = {255,255,255};
 
 SDL_Renderer* renderer;
-TTF_Font*     pixelFont;
+TTF_Font*     font;
 SDL_Window*   window;
 SDL_Surface*  labelSurface;
+SDL_Texture*  labelTexture;
 SDL_Surface*  rectSurface;
+SDL_Texture*  rectTexture;
+
 
 SDL_Rect windowRect;
 SDL_Rect labelRect;
@@ -61,21 +61,14 @@ void HSVtoRGB(float H, float S,float V, int *rOut, int *gOut, int *bOut){
 int main(int argc, char *argv[]) {
     // returns zero on success else non-zero
     if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0) {printf("error initializing SDL: %s\n", SDL_GetError());}
-    if (!TTF_Init()) {printf("Unable to initialize SDL_ttf: %s \n", TTF_GetError());}
-    pixelFont = TTF_OpenFont("./font/PixelFJVerdana12pt", 24);
+    TTF_Init();
+    font = TTF_OpenFont("./font/Sans.ttf", 24);
 
-    window = SDL_CreateWindow("GAME", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width, height,0 ); // SDL_WINDOW_FULLSCREEN_DESKTOP);
+    window = SDL_CreateWindow("GAME", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width, height,0 );
     SDL_GetWindowSize(window, &width, &height);
     
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     rectSurface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
-    printf("Before rendertextsolid\n");
-    labelSurface = TTF_RenderText_Shaded(pixelFont, "placeholer", black, white); 
-    printf("After rendertextsolid\n");
-
-    sprintf(rString, "%d", r);
-    sprintf(gString, "%d", g);
-    sprintf(bString, "%d", b);
 
     SDL_ShowCursor(SDL_DISABLE);
 
@@ -83,11 +76,6 @@ int main(int argc, char *argv[]) {
     windowRect.y = 0;
     windowRect.w = width;
     windowRect.h = height;
-
-    labelRect.w = width/10;
-    labelRect.h = height/10;
-    labelRect.x = width/2-labelRect.w;
-    labelRect.y = height/2-labelRect.h;
 
     // controls annimation loop
     int close = 0;
@@ -106,13 +94,39 @@ int main(int argc, char *argv[]) {
         }
 
         HSVtoRGB(h,s,v,&r,&g,&b);
+
+        char label[20] = "";
+
+        char rString[4]; 
+        char gString[4]; 
+        char bString[4];
+
+        sprintf(rString, "%d", r);
+        sprintf(gString, "%d", g);
+        sprintf(bString, "%d", b);
+
+        
+        strcat(label,rString);
+        strcat(label,",");
+        strcat(label,gString);
+        strcat(label,",");
+        strcat(label,bString);
+        
         SDL_FillRect(rectSurface, NULL, SDL_MapRGB(rectSurface->format, r, g, b));
-        labelSurface = TTF_RenderText_Solid(pixelFont, "placeholer", black); 
+        rectTexture = SDL_CreateTextureFromSurface(renderer, rectSurface);
+
+        labelSurface = TTF_RenderText_Solid(font, label, black); 
+        TTF_SizeText(font, label, &labelRect.w, &labelRect.h);
+        labelRect.x = width/2-labelRect.w/2;
+        labelRect.y = height/2-labelRect.h/2;
+        
+        labelTexture = SDL_CreateTextureFromSurface(renderer, labelSurface);
  
         // clears the screen
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, SDL_CreateTextureFromSurface(renderer, rectSurface), NULL, &windowRect);
-        SDL_RenderCopy(renderer, SDL_CreateTextureFromSurface(renderer, labelSurface), NULL, &labelRect);
+
+        SDL_RenderCopy(renderer, rectTexture, NULL, &windowRect);
+        SDL_RenderCopy(renderer, labelTexture, NULL, &labelRect);
  
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / maxFPS); // calculates to 60 fps
@@ -120,7 +134,7 @@ int main(int argc, char *argv[]) {
  
     SDL_FreeSurface(rectSurface);
     SDL_FreeSurface(labelSurface);
-    TTF_CloseFont(pixelFont);
+    TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer); // destroy renderer
     SDL_DestroyWindow(window); // destroy window
     SDL_Quit(); // close SDL

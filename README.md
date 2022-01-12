@@ -12,7 +12,7 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 
 # Planung / Zielsetzung: Tetris!
 
-## Notwendige Funktionen, damit das Program funktioniert
+## Notwendige Funktionen, damit das Programm funktioniert
 - Speicherung der Blockmöglichkeiten
 - Speicherung der temporen Blockverteilung im Spielfeld durch Listen
  Tastaturbefehlmanagement
