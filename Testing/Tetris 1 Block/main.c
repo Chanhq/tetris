@@ -1,12 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <SDL2/SDL.h> // for initializing and shutdown functions
 #include <SDL2/SDL_image.h> // for rendering images and graphics on screen
 #include <SDL2/SDL_timer.h> // for using SDL_Delay() functions
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_ttf.h>
+#include <string.h>
 
 #define WIDTH 300
 #define HEIGHT 600
@@ -23,68 +20,6 @@ int wPressed = 0; //if piece should rotate
 int aPressed = 0; //if piece should go left
 int sPressed = 0; //if piece should go down faster
 int dPressed = 0; //if piece should go right
-
-typedef uint8_t u8;
-typedef int32_t s32;
-
-struct Tetrino {
-    const u8 *data;
-    const s32 width;
-};
-
-static const u8 TETRINO_1[] = {
-    0, 0, 0, 0,
-    1, 1, 1, 1,
-    0, 0, 0, 0,
-    0, 0, 0, 0
-};
-static const u8 TETRINO_2[] = {
-    2, 2,
-    2, 2
-};
-static const u8 TETRINO_3[] = {
-    0, 0, 0,
-    3, 3, 3,
-    0, 3, 0
-};
-static const u8 TETRINO_4[] = {
-    0, 4, 4,
-    4, 4, 0,
-    0, 0, 0
-};
-static const u8 TETRINO_5[] = {
-    5, 5, 0,
-    0, 5, 5,
-    0, 0, 0
-};
-static const u8 TETRINO_6[] = {
-    6, 0, 0,
-    6, 6, 6,
-    0, 0, 0
-};
-static const u8 TETRINO_7[] = {
-    0, 0, 7,
-    7, 7, 7,
-    0, 0, 0
-};
-
-static const struct Tetrino TETRINOS[] = {
-    {TETRINO_1, 4},
-    {TETRINO_2, 2},
-    {TETRINO_3, 3},
-    {TETRINO_4, 3},
-    {TETRINO_5, 3},
-    {TETRINO_6, 3},
-    {TETRINO_7, 3}
-};
-
-struct Piece_State {
-    u8 tetrino_index;
-    s32 offset_row;
-    s32 offset_col;
-    s32 rotation;
-};
-
 
 int field[MAXCELLY][MAXCELLX] = {
     {0,0,0,0,0,0,0,0,0,0},

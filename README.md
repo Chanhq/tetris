@@ -14,14 +14,15 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 # Planung / Zielsetzung: Tetris!
 
 ## Notwendige Funktionen, damit das Programm funktioniert
-- Speicherung der Blockmöglichkeiten
-- Speicherung der temporen Blockverteilung im Spielfeld durch Listen
- Tastaturbefehlmanagement
-- Checken der Kollision und Überführung des bewegenden Blocks in einen festen
-- Randomisierte Blöcke
-- Bewegung der Blöcke herunter
-- Vollständige Zeilen verschwinden automatisch
-- Drehen der Blöcke
+- [ ] Speicherung der Blockmöglichkeiten
+- [x] Speicherung der temporen Blockverteilung im Spielfeld - durch Listen
+- [X] Tastaturbefehlmanagement
+- [X] Checken der Kollision
+- [X] Überführung des bewegenden Blocks in einen festen
+- [ ] Randomisierte Blöcke
+- [X] Bewegung der Blöcke herunter
+- [X] Vollständige Zeilen verschwinden automatisch
+- [ ] Drehen der Blöcke
 
 ## Wichtige Extra-Funktionen
 - Erhöhung der Schwierigkeit, desto höher der Score
