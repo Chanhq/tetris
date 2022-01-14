@@ -273,6 +273,9 @@ int getBlock(u8 x, u8 y) {
     else {return field[y*WIDTH + x];}
 }
 
+int getRandom(int min, int max) {
+    return rand()%(max-min + 1)+min;
+}
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
@@ -365,7 +368,7 @@ int main(int argc, char *argv[]) {
                             field[0*WIDTH + x] = 0;
                         }
                     }
-                    tetrinoColor = rand()%7;
+                    tetrinoColor = getRandom(1,7);
                     xPos = defaultXPos;
                     yPos = 0;
                 } else {
