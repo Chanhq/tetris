@@ -59,17 +59,9 @@ SDL_Texture* blockTexture;
 
 
 
-Uint32 my_callbackfunc(Uint32 interval, void *param) {
+Uint32 generateEventAfterDelay(Uint32 interval, void *param) {
     SDL_Event event;
-    SDL_UserEvent userevent;
-
-    userevent.type = SDL_USEREVENT;
-    userevent.code = 0;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
-
     event.type = SDL_USEREVENT;
-    event.user = userevent;
 
     SDL_PushEvent(&event);
     return(interval);
@@ -83,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     SDL_Window* window = SDL_CreateWindow("GAME", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,WIDTH, HEIGHT,0 );
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    fallTimer = SDL_AddTimer(fallSpeed, my_callbackfunc, NULL);
+    fallTimer = SDL_AddTimer(fallSpeed, generateEventAfterDelay, NULL);
 
     SDL_ShowCursor(SDL_DISABLE);
 
@@ -122,7 +114,7 @@ int main(int argc, char *argv[]) {
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
                     aPressed = 1;
-                    if (currentPieceRect.y/CELLWIDTH > 0 && field[currentPieceRect.y/CELLWIDTH][currentPieceRect.x/CELLWIDTH-1] == 0) {currentPieceRect.x -= CELLWIDTH;}
+                    if (currentPieceRect.x/CELLWIDTH > 0 && field[currentPieceRect.y/CELLWIDTH][currentPieceRect.x/CELLWIDTH-1] == 0) {currentPieceRect.x -= CELLWIDTH;}
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
