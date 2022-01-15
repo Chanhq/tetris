@@ -26,22 +26,28 @@
 
 #define SBLOCKWIDTH 30 //has to be a dividor of WIDTH and HEIGHT
 
-typedef uint8_t u8;  //mostly used for ingame coords
-typedef int32_t s32; //mostly used for screen coords
+typedef int8_t i8;  //mostly used for ingame coords
+typedef int32_t i32; //mostly used for screen coords
 
-u8 tetrinoColor = 1; //has to be smaller than 8
-u8 backgroundBlockColor = 0;
+i8 tetrinoColor = 1; //has to be smaller than 8
+i8 backgroundBlockColor = 0;
 
-const u8 defaultXPos = WIDTH/2-1; //in which x-coordinate above the game spawns
-
-s32 fallSpeed = 150; 
+i32 fallSpeed = 600; 
 // if key s is not pressed: in double milliseconds (lower is faster)
 // if key s is     pressed: in        milliseconds (lower is faster)
 
-u8 wPressed = 0; //if piece should rotate
-u8 sPressed = 0; //if piece should go down faster
-u8 aPressed = 0; //if piece should go left
-u8 dPressed = 0; //if piece should go right
+//const i8 tSpawnPosX = WIDTH/2-2;
+//const i8 tSpawnPosY = -3;
+
+const i8 tSpawnPosX = WIDTH/2-1;
+const i8 tSpawnPosY = -3;
+
+//important variables to save information about the current, falling tetrino (t for tetrino)
+i8 tForm; //type of tetrino (0-6), defined as the index in the TETRINOS-list
+i8 tRot;  //rotation of tetrino (0-3), defined as the second index in the Tetrino list
+i8 tColor;  //rotation of tetrino (0-3), defined as the second index in the Tetrino list
+i8 tPosX;
+i8 tPosY;
 
 SDL_TimerID fallTimer;
 SDL_TimerID fasterFallTimer; //if key s is pressed
@@ -51,139 +57,11 @@ SDL_Color black = {  0,  0,  0};
 SDL_Color white = {255,255,255};
 TTF_Font* font;
 
-struct TetrinoType {
-    const u8 *data;
-    const u8 w; //width
-};
+i8 getRandom(int min, int max) {
+    return rand()%(max-min + 1)+min;
+}
 
-const u8 TETRINO_1[4][16] = {
-    {0, 0, 0, 0,        // oooo
-    1, 1, 1, 1,         // ####
-    0, 0, 0, 0,         // oooo
-    0, 0, 0, 0},        // oooo
-    //##########
-    {0, 0, 1, 0,        // oo#o
-    0, 0, 1, 0,         // oo#o
-    0, 0, 1, 0,         // oo#o
-    0, 0, 1, 0},        // oo#o
-    //##########
-    {0, 0, 0, 0,        // oooo
-    1, 1, 1, 1,         // ####
-    0, 0, 0, 0,         // oooo
-    0, 0, 0, 0},        // oooo
-    //##########
-    {0, 0, 1, 0,        // oo#o
-    0, 0, 1, 0,         // oo#o
-    0, 0, 1, 0,         // oo#o
-    0, 0, 1, 0},        // oo#o
-};
-const u8 TETRINO_2[4][4] = {
-    {1, 1,  //  ##
-    1, 1},  //  ##
-    {1, 1,
-    1, 1},
-    {1, 1,
-    1, 1},
-    {1, 1,
-    1, 1},
-};
-const u8 TETRINO_3[4][9] = {
-    {0, 0, 0,       // ooo 
-     1, 1, 1,       // ###
-     0, 1, 0},      // o#o
-   //########
-    {0, 1, 0,       // o#o
-     1, 1, 0,       // ##o
-     0, 1, 0},      // o#o
-    //#######
-    {0, 1, 0,       // o#o
-     1, 1, 1,       // ###
-     0, 0, 0},      // ooo
-    //#######
-    {0, 1, 0,       // o#o
-     0, 1, 1,       // o##
-     0, 1, 0},      // o#o
-};
-const u8 TETRINO_4[4][9] = {
-    {0, 1, 1,       // o##
-     1, 1, 0,       // ##o
-     0, 0, 0},      // ooo
-    //#######
-    {0, 1, 0,       // o#o
-     0, 1, 1,       // o##
-     0, 0, 1},      // oo#
-    //#######
-    {0, 1, 1,       // o##
-     1, 1, 0,       // ##o
-     0, 0, 0},      // ooo
-    //#######
-    {0, 1, 0,       // o#o
-     0, 1, 1,       // o##
-     0, 0, 1}       // oo#
-};
-const u8 TETRINO_5[4][9] = {
-    {0, 0, 1,       // oo#
-     0, 1, 1,       // o##
-     0, 1, 0},      // o#o
-    //#######
-    {1, 1, 0,       // ##o
-     0, 1, 1,       // o##
-     0, 0, 0},      // ooo
-    //#######
-    {0, 0, 1,       // oo#
-     0, 1, 1,       // o##
-     0, 1, 0},      // o#o
-    //#######
-    {1, 1, 0,       // ##o
-     0, 1, 1,       // o##
-     0, 0, 0}       // ooo
-};
-const u8 TETRINO_6[4][9] = {
-    {1, 0, 0,       // #oo
-     1, 1, 1,       // ###
-     0, 0, 0},      // ooo
-    //########
-    {0, 1, 1,       // o##
-     0, 1, 0,       // o#o
-     0, 1, 0},      // o#o
-    //########    
-    {0, 0, 0,       // ooo
-     1, 1, 1,       // ###
-     0, 0, 1},      // oo#
-    //########
-    {0, 1, 0,       // o#o
-     0, 1, 0,       // o#o
-     1, 1, 0},      // ##o
-};
-const u8 TETRINO_7[4][9] = {
-    {0, 0, 1,       // oo#
-     1, 1, 1,       // ###
-     0, 0, 0},      // ooo
-    //########      
-    {0, 1, 0,       // o#o
-     0, 1, 0,       // o#o
-     0, 1, 1},      // o##
-    //########      //
-    {0, 0, 0,       // ooo
-     1, 1, 1,       // ###
-     1, 0, 0},      // #oo
-    //########      //
-    {1, 1, 0,       // ##o
-     0, 1, 0,       // o#o
-     0, 1, 0},      // o#o
-};
-
-const struct TetrinoType TETRINOS[] = {
-    {TETRINO_1, 4},
-    {TETRINO_2, 2},
-    {TETRINO_3, 3},
-    {TETRINO_4, 3},
-    {TETRINO_5, 3},
-    {TETRINO_6, 3},
-    {TETRINO_7, 3}
-};
-
-struct Color {u8 r; u8 g; u8 b; u8 a;};
+struct Color {i32 r; i32 g; i32 b; i32 a;};
 
 const struct Color BASE_COLORS[] = {
     { 0x28, 0x28, 0x28, 0xFF }, 
@@ -218,25 +96,7 @@ const struct Color DARK_COLORS[] = {
     { 0x66, 0x42, 0x1E, 0xFF }
 };
 
-struct Tetrino {
-    u8 type; //type of block, defined as the index in the TETRINOS-list
-    u8 offsetX;
-    u8 offsetY;
-    u8 rot;
-};
-
-u8 getRotTetrino(const struct TetrinoType *tetrinoType, u8 x, u8 y, u8 rot){
-    u8 w = tetrinoType->w; //width
-    switch (rot) {
-    case 0: return tetrinoType->data[(y    ) * w +  x];
-    case 1: return tetrinoType->data[(w-x-1) * w +  y];
-    case 2: return tetrinoType->data[(w-y-1) * w + (w-x-1)];
-    case 3: return tetrinoType->data[(x    ) * w + (w-y-1)];
-    }
-    return 0;
-}
-
-void drawRect(s32 sx, s32 sy, s32 sw, s32 sh, struct Color color, u8 fill){
+void drawRect(i32 sx, i32 sy, i32 sw, i32 sh, struct Color color, i8 fill){
     SDL_Rect rect = {0};
     rect.x = sx;
     rect.y = sy;
@@ -250,20 +110,20 @@ void drawRect(s32 sx, s32 sy, s32 sw, s32 sh, struct Color color, u8 fill){
     }
 }
 
-void drawText(const char *text,s32 sx, s32 sy,u8 alignment,struct Color color){
+void drawText(const char *text,i32 sx, i32 sy,i8 alignment,struct Color color){
     SDL_Color sdl_color = { color.r, color.g, color.b, color.a };
     SDL_Surface *surface = TTF_RenderText_Solid(font, text, sdl_color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_Rect rect;
 
     switch (alignment) {
-    case 0: //Align left
+    case -1: //Align left
         rect.x = sx;
         break;
-    case 1: //Align center
+    case 0: //Align center
         rect.x = sx - surface->w / 2;
         break;
-    case 2: //Align right
+    case 1: //Align right
         rect.x = sx - surface->w;
         break;
     }
@@ -276,32 +136,20 @@ void drawText(const char *text,s32 sx, s32 sy,u8 alignment,struct Color color){
     SDL_DestroyTexture(texture);
 }
 
-void drawBlock(u8 x, u8 y, u8 color){
+void drawBlock(i8 x, i8 y, i8 color){
     struct Color base_color = BASE_COLORS[color];
     struct Color light_color = LIGHT_COLORS[color];
     struct Color dark_color = DARK_COLORS[color];
 
-    s32 borderThickness = SBLOCKWIDTH / 10;
+    i32 borderThickness = SBLOCKWIDTH / 10;
 
-    s32 sx = x * SBLOCKWIDTH + OFFSETSX;
-    s32 sy = y * SBLOCKWIDTH + OFFSETSY;
+    i32 sx = x * SBLOCKWIDTH + OFFSETSX;
+    i32 sy = y * SBLOCKWIDTH + OFFSETSY;
 
     //drawRect(x, y, SBLOCKWIDTH, SBLOCKWIDTH, base_color, 1);
     drawRect(sx, sy, SBLOCKWIDTH, SBLOCKWIDTH, dark_color,1);
     drawRect(sx + borderThickness, sy, SBLOCKWIDTH - borderThickness, SBLOCKWIDTH - borderThickness, light_color,1);
     drawRect(sx + borderThickness, sy + borderThickness, SBLOCKWIDTH - borderThickness * 2, SBLOCKWIDTH - borderThickness * 2, base_color,1);
-}
-
-void drawTetrino(const struct Tetrino *tetrino, u8 outline){
-    const struct TetrinoType *tetrinoType = TETRINOS + tetrino->type;
-    for (u8 x = 0; x < tetrinoType->w; x++){
-        for (u8 y = 0; y < tetrinoType->w; y++){
-            u8 value = getRotTetrino(tetrinoType, x, y, tetrino->rot);
-            if (value){
-                drawBlock(x + tetrino->offsetX, y + tetrino->offsetY, value);
-            }
-        }
-    }
 }
 
 int field[WIDTH*HEIGHT] = {
@@ -330,9 +178,6 @@ int field[WIDTH*HEIGHT] = {
 SDL_Color backgroundColor = {  0,  0,  0};
 SDL_Color frontColor = {255,0,0};
 
-u8 xPos = defaultXPos;
-u8 yPos = 0;
-
 Uint32 generateUserEvent(Uint32 interval, void *param) {
     SDL_Event event;
     SDL_UserEvent userevent;
@@ -349,13 +194,156 @@ Uint32 generateUserEvent(Uint32 interval, void *param) {
     return(interval);
 }
 
-int getBlock(u8 x, u8 y) {
+i8 getBlock(i8 x, i8 y) {
     if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {return -1;}
     else {return field[y*WIDTH + x];}
 }
 
-int getRandom(int min, int max) {
-    return rand()%(max-min + 1)+min;
+const i8 tForms[7][4][16] = {
+    { //0. tetrino: I
+        {0, 0, 0, 0,
+         1, 1, 1, 1,
+         0, 0, 0, 0,
+         0, 0, 0, 0},
+        
+        {0, 0, 1, 0,
+         0, 0, 1, 0,
+         0, 0, 1, 0,
+         0, 0, 1, 0},
+
+        {0, 0, 0, 0,
+         1, 1, 1, 1,
+         0, 0, 0, 0,
+         0, 0, 0, 0},
+
+        {0, 0, 1, 0,
+         0, 0, 1, 0,
+         0, 0, 1, 0,
+         0, 0, 1, 0},
+    },
+    { //1. tetrino: O
+        {1, 1,
+         1, 1,},
+
+        {1, 1,
+         1, 1,},
+
+        {1, 1,
+         1, 1,},
+        
+        {1, 1,
+         1, 1,},
+    },
+    { //2. tetrino: T
+        {0, 0, 0,
+         1, 1, 1,
+         0, 1, 0},
+    
+        {0, 1, 0,
+         1, 1, 0,
+         0, 1, 0},
+        
+        {0, 1, 0,
+         1, 1, 1,
+         0, 0, 0},
+    
+        {0, 1, 0,
+         0, 1, 1,
+         0, 1, 0}
+    },
+    { //3. tetrion: S
+        {0, 1, 1,
+         1, 1, 0,
+         0, 0, 0},
+
+        {0, 1, 0,
+         0, 1, 1,
+         0, 0, 1},
+
+        {0, 1, 1,
+         1, 1, 0,
+         0, 0, 0},
+
+        {0, 1, 0,
+         0, 1, 1,
+         0, 0, 1}
+    },
+    { //4. tetrino: Z
+        {0, 0, 1,
+         0, 1, 1,
+         0, 1, 0},
+
+        {1, 1, 0,
+         0, 1, 1,
+         0, 0, 0},
+
+        {0, 0, 1,
+         0, 1, 1,
+         0, 1, 0},
+
+        {1, 1, 0,
+         0, 1, 1,
+         0, 0, 0}
+    },
+    { //5. tetrino: J
+        {1, 0, 0,
+         1, 1, 1,
+         0, 0, 0},
+
+        {0, 1, 1,
+         0, 1, 0,
+         0, 1, 0},
+
+        {0, 0, 0,
+         1, 1, 1,
+         0, 0, 1},
+
+        {0, 1, 0,
+         0, 1, 0,
+         1, 1, 0},
+    },
+    { //6. tetrino: L
+        {0, 0, 1,
+         1, 1, 1,
+         0, 0, 0},
+
+        {0, 1, 0,
+         0, 1, 0,
+         0, 1, 1},
+
+        {0, 0, 0,
+         1, 1, 1,
+         1, 0, 0},
+
+        {1, 1, 0,
+         0, 1, 0,
+         0, 1, 0}
+    }
+};
+
+const i8 tFormWidth[7] = {4,2,3,3,3,3,3};
+
+void newTetrino() {
+    tColor = getRandom(1,7);
+    tRot = getRandom(0,3);
+    tForm = getRandom(0,6);
+    if (tForm == 0) {
+        tPosX = tSpawnPosX-2;
+    } else if (tForm == 1) {
+        tPosX = tSpawnPosX+1;
+    } else {
+        tPosX = tSpawnPosX;
+    }
+    
+    tPosY = tSpawnPosY;
+}
+
+void drawTetrino() {
+    for (i8 y = 0; y<tFormWidth[tForm]; y++) {
+        for (i8 x = 0; x<tFormWidth[tForm]; x++) {
+            drawBlock(tPosX+x,tPosY+y,tForms[tForm][tRot][y * tFormWidth[tForm] + x] * tColor);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -371,6 +359,7 @@ int main(int argc, char *argv[]) {
 
     SDL_ShowCursor(SDL_DISABLE);
 
+    newTetrino();
 
     int close = 0;
     while (!close) {
@@ -380,67 +369,64 @@ int main(int argc, char *argv[]) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {close = 1;}
             if (event.type == SDL_KEYDOWN) {
+
                 switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_W:
                 case SDL_SCANCODE_UP:
-                    wPressed = 1;
+                    tRot++;
+                    if (tRot>3) {tRot = 0;}
                     //Stück drehen
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
-                    sPressed = 1;
                     //Stück schneller nach unten bewegen
-                    if (getBlock(xPos, yPos+1)==0) {yPos += 1;}
+                    //if (getBlock(xPos, yPos+1)==0) {yPos += 1;}
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                    aPressed = 1;
-                    if (getBlock(xPos-1, yPos)==0) {xPos -= 1;}
+                    //if (getBlock(xPos-1, yPos)==0) {xPos -= 1;}
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                    dPressed = 1;
-                    if (getBlock(xPos+1,yPos)==0) {xPos += 1;}
+                    //if (getBlock(xPos+1,yPos)==0) {xPos += 1;}
                     break;
                 }
             } else if (event.type == SDL_KEYUP) { 
                 switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_W:
                 case SDL_SCANCODE_UP:
-                    wPressed = -1;
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                    aPressed = 0;
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
-                    sPressed = 0;
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                    dPressed = 0;
                     break;
                 }
             } else if (event.type == SDL_USEREVENT) {
+                //newTetrino();
 
-                u8 collide = 0;
+                i8 collide = 0;
+                if (getBlock(tPosX,tPosY + tFormWidth[tForm]) != 0) {collide = 1;}
 
-                if (yPos + 1 == HEIGHT) {collide = 1;}
-                else {
+                /*else { // collide with other blocks in the field
                     for (int x = 0; x<WIDTH; x++) {
                         if (field[(yPos + 1)*WIDTH + x]!=0 && xPos == x) {collide = 1;}
                     }
                 }
+                */
 
                 if (collide) {
-                    field[(yPos) *WIDTH + xPos] = tetrinoColor;
+                    field[(tPosY) *WIDTH + tPosX] = tColor;
                     int lineComplete = 1;
                     for (int x = 0; x<WIDTH; x++) {
-                        if (getBlock(x,yPos)==0) {lineComplete = 0;} //line isnt complete
+                        if (getBlock(x,tPosY)==0) {lineComplete = 0;} //line isnt complete
                     }
                     if (lineComplete) { //delete line
-                        for (int y = yPos; y>0; y--) {
+                        for (int y = tPosY; y>0; y--) {
                             for (int x = 0; x<WIDTH; x++) {
                                 field[y*WIDTH + x] = field[(y-1)*WIDTH + x];
                             }
@@ -449,11 +435,10 @@ int main(int argc, char *argv[]) {
                             field[0*WIDTH + x] = 0;
                         }
                     }
-                    tetrinoColor = getRandom(1,7);
-                    xPos = defaultXPos;
-                    yPos = 0;
+                    
+                    newTetrino();
                 } else {
-                    yPos += 1;
+                    tPosY += 1;
                 }
             }
         }
@@ -463,11 +448,12 @@ int main(int argc, char *argv[]) {
         
         for (int y = 0; y<HEIGHT; y++) {
             for (int x = 0; x<WIDTH; x++) {
-                drawBlock(x,y,getBlock(x,y)); 
+                drawBlock(x,y,getBlock(x,y)+2); //field blocks
             }
         }
+        
+        drawTetrino();
 
-        drawBlock(xPos,yPos,tetrinoColor);
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / maxFPS); // calculates to maxFPS
     }
@@ -479,3 +465,16 @@ int main(int argc, char *argv[]) {
  
     return 0;
 }
+
+/*
+u8 getRotTetrino(const struct TetrinoType *tetrinoType, u8 x, u8 y, u8 rot){
+    u8 w = tetrinoType->w; //width
+    switch (rot) {
+    case 0: return tetrinoType->data[(y    ) * w +  x];
+    case 1: return tetrinoType->data[(w-x-1) * w +  y];
+    case 2: return tetrinoType->data[(w-y-1) * w + (w-x-1)];
+    case 3: return tetrinoType->data[(x    ) * w + (w-y-1)];
+    }
+    return 0;
+}
+*/
