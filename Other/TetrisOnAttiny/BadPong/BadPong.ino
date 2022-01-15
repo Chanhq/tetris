@@ -17,7 +17,7 @@ int dPin = 7;
 int gameOverDelay = 3000;
 
 // there are different wall types
-unsigned char block[8][4]= { 
+unsigned char block[4][4]= { 
   {B0000,
    B0000,   // 0: Air
    B0000,
@@ -37,43 +37,41 @@ unsigned char block[8][4]= {
    B1111,   // 3: Solid
    B1111,
    B1111},
-   
-  {B0001,
-   B0111,   // 4: Solid bottom left
-   B0111,
-   B1111},
-  {B1000,
-   B1110,   // 5: Solid top left
-   B1110,
-   B1111},
-  {B1111,
-   B1110,   // 6: Solid top right
-   B1110,
-   B1000},
-  {B1111,
-   B0111,   // 7: Solid bottom right
-   B0111,
-   B0001}
 };
 
-char velX = 0;
-char velY = 0;
 long oldTime;
-const unsigned char maxSnakeLen = 100;
-unsigned char snakeX[maxSnakeLen];
-unsigned char snakeY[maxSnakeLen];
-unsigned char snakeBlock = 1;
-unsigned char snakeLen = 3;
-unsigned char appleX;
-unsigned char appleY;
-char dir = 1; // 0: Right;   1: Down;    2: Left   3: Up
 
+
+const unsigned char ballSpawnPosX = 2;
+const unsigned char ballSpawnPosY = 29;
+const unsigned char ballSpawnVelY = -1;
+const unsigned char ballSpawnVelX = -1;
+
+char ballPosX = ballSpawnPosX;
+char ballPosY = ballSpawnPosY;
+char ballVelX = ballSpawnVelX;
+char ballVelY = ballSpawnVelY;
+
+unsigned char ballBlock = 2;
+unsigned char paddleBlock = 3;
+unsigned char paddleWidth = 3;
+const unsigned char enemyPaddleSpawnX = WIDTH-paddleWidth;
+
+unsigned char playerPaddlePosX = WIDTH/2-paddleWidth/2;
+unsigned char playerPaddlePosY = 2;
+unsigned char enemyPaddlePosX = WIDTH/2-paddleWidth/2;
+unsigned char enemyPaddlePosY = HEIGHT-2;
+
+char nextBallPosX = ballPosX;
+char nextBallPosY = ballPosY;
+
+char playerPaddleVelX = 0;
 
 // room with nothing
 const unsigned char room[HEIGHT][WIDTH] PROGMEM = {
 
 // 0 1 2 3 4 5 6 7 8 9 101112131415
-  {4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5}, //  0
+  {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, //  0
   {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, //  1
   {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, //  2
   {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, //  3
@@ -104,9 +102,8 @@ const unsigned char room[HEIGHT][WIDTH] PROGMEM = {
   {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, // 28
   {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, // 29
   {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, // 30
-  {7,3,3,3,3,3,3,3,3,3,3,3,3,3,3,6}, // 31
+  {3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3}, // 31
 };
-
 
 const unsigned char gameLogo[12][4] = {
   {B00000000,B00000000,B00000000,B00000000},
@@ -135,14 +132,12 @@ const unsigned char overLogo[12][4] = { //16px below gameLogo
   {B11101110,B01111100,B11000110,B11011100},
   {B11111110,B01111100,B11111110,B11001110},
   {B01111100,B00111000,B11111110,B11000110},
-  {B00000000,B00010000,B00000000,B00000000},
+  {B00000000,B00000000,B00000000,B00000000},
 };
-
 
 unsigned char getBlock (unsigned char x, unsigned char y) {
   return pgm_read_byte(&room[y][x]);
 }
-
 
 void displayGameOver() {
   for (unsigned char x=0;x<64; x+=8) {
@@ -161,21 +156,21 @@ void displayGameOver() {
   }  
 }
 
-
-void displayRoom(){
+void displayGame(){
   for (char x=WIDTH-1;x>=0; x-=2) {
     for (char y=0;y<HEIGHT; y++) {
     
       unsigned char blockLeft  = getBlock(x-1,y);
       unsigned char blockRight = getBlock(x,y);
 
-      for (int i = 0; i<snakeLen; i++) {
-        if (x-1 == snakeX[i] && y == snakeY[i]) {blockLeft  = snakeBlock;}
-        if (x   == snakeX[i] && y == snakeY[i]) {blockRight = snakeBlock;} 
-      }
+      if (ballPosX == x-1 && ballPosY == y) {blockLeft = ballBlock;}
+      if (ballPosX == x  && ballPosY == y) {blockRight = ballBlock;}
 
-      if (x-1 == appleX && y == appleY) {blockLeft = 2;} 
-      if (x   == appleX && y == appleY) {blockRight = 2;} 
+      if (x-1>= playerPaddlePosX && x-1<=playerPaddlePosX+paddleWidth && y == playerPaddlePosY) {blockLeft = paddleBlock;}
+      if (x>= playerPaddlePosX && x<=playerPaddlePosX+paddleWidth && y == playerPaddlePosY) {blockRight = paddleBlock;}
+
+      if (x-1>= enemyPaddlePosX && x-1<=enemyPaddlePosX+paddleWidth && y == enemyPaddlePosY) {blockLeft = paddleBlock;}
+      if (x>= enemyPaddlePosX && x<=enemyPaddlePosX+paddleWidth && y == enemyPaddlePosY) {blockRight = paddleBlock;}
 
       unsigned char twoBlockSendPackage[4] = {
       //  L \/ R    //L: Left Block, R: Right Block
@@ -201,19 +196,14 @@ void displayRoom(){
 }
 
 void newGame() {
-  for (unsigned char i = 0; i < snakeLen; i++) {
-     snakeX[i] = 0; snakeY[i] = 0;
-  }
-  snakeX[0] = 4;
-  snakeY[0] = 4;
-  snakeX[1] = 4;
-  snakeY[1] = 5;
-  snakeX[2] = 4;
-  snakeY[2] = 6;
-  dir = 1;
-  snakeLen = 3;
-  appleX = random(1,16);
-  appleY = random(1,32);
+  ballPosX = ballSpawnPosX;
+  ballPosY = ballSpawnPosY;
+  nextBallPosX = ballSpawnPosX;
+  nextBallPosY = ballSpawnPosY;
+  ballVelX = ballSpawnVelX;
+  ballVelY = ballSpawnVelY;
+  enemyPaddlePosX = enemyPaddleSpawnX;
+  playerPaddlePosX = enemyPaddleSpawnX;
 }
 
 
@@ -232,62 +222,44 @@ void setup() {
 }
  
 void loop(){
-  if (!digitalRead(aPin) && dir != 0) {dir = 2;}
-  if (!digitalRead(dPin) && dir != 2) {dir = 0;}
-  if (!digitalRead(wPin) && dir != 1) {dir = 3;}
-  if (!digitalRead(sPin) && dir != 3) {dir = 1;}
+  if (!digitalRead(aPin)) {playerPaddleVelX = -1;}
+  if (!digitalRead(dPin)) {playerPaddleVelX =  1;}
+  if (digitalRead(dPin) && digitalRead(aPin)) {playerPaddleVelX = 0;}
 
-  if (millis()-oldTime > 200) {
-    oldTime = millis();
-    switch(dir) {
-      case 0: //right
-        snakeX[snakeLen] = snakeX[snakeLen-1] + 1;
-        snakeY[snakeLen] = snakeY[snakeLen-1];
-        break;
-      case 1: //down
-        snakeX[snakeLen] = snakeX[snakeLen-1];
-        snakeY[snakeLen] = snakeY[snakeLen-1] + 1;
-        break;
-      case 2: //left
-        snakeX[snakeLen] = snakeX[snakeLen-1] - 1;
-        snakeY[snakeLen] = snakeY[snakeLen-1];
-        break;
-      case 3: //up
-        snakeX[snakeLen] = snakeX[snakeLen-1];
-        snakeY[snakeLen] = snakeY[snakeLen-1] - 1;
-        break;
-    }
-  
-    if (snakeX[snakeLen-1] == appleX && snakeY[snakeLen-1] == appleY) {
-      snakeLen ++;
-      appleX = random(1,15);
-      appleY = random(1,31);
-      if (maxSnakeLen == snakeLen) {
-        newGame();
-      }
-    } else {
-      for (int i = 1; i <= snakeLen; i++) {
-        snakeX[i-1] = snakeX[i];
-        snakeY[i-1] = snakeY[i];
-      }
-    }
+  if (millis()-oldTime > 100) {
 
-    displayRoom();
-    
-    for (int i=0; i<snakeLen-1; i++) {
-      if ((snakeX[snakeLen-1]==snakeX[i]) && (snakeY[snakeLen-1]==snakeY[i])) {
-        delay(500);
-        newGame();
-        displayGameOver();
-        delay(gameOverDelay);
-      }
-    }
-    
-    if ((snakeX[snakeLen-1]<1) || (snakeX[snakeLen-1]>WIDTH-2) || (snakeY[snakeLen-1]<1) || (snakeY[snakeLen-1] > HEIGHT-2)) {
+    if (ballPosY<0 || ballPosY>=HEIGHT-1) {
       delay(500);
       newGame();
       displayGameOver();
       delay(gameOverDelay);
-    } 
-  } 
+    }
+
+    //PlayerPaddle Bewegung
+    if (playerPaddleVelX==-1 && playerPaddlePosX>0) {playerPaddlePosX--;}
+    if (playerPaddleVelX==1 && playerPaddlePosX<WIDTH) {playerPaddlePosX++;}
+
+    //EnemyPaddle Bewegung langsam
+    //if (ballPosX<enemyPaddlePosX) {enemyPaddlePosX-=1;}
+    //if (ballPosX>enemyPaddlePosX+paddleWidth) {enemyPaddlePosX+=1;}
+
+    //PlayerPaddle Bewegung
+    if (playerPaddleVelX==-1 && playerPaddlePosX>0) {enemyPaddlePosX--;}
+    if (playerPaddleVelX==1 && playerPaddlePosX<WIDTH) {enemyPaddlePosX++;}
+    
+
+    
+    nextBallPosX += ballVelX;
+    nextBallPosY += ballVelY;
+
+    if (nextBallPosX <2 || nextBallPosX>=WIDTH-2) {ballVelX*=-1;}
+
+    if (nextBallPosX >= enemyPaddlePosX && nextBallPosX <= enemyPaddlePosX+paddleWidth && nextBallPosY == enemyPaddlePosY) {ballVelY*=-1;}
+    if (nextBallPosX >= playerPaddlePosX && nextBallPosX <= playerPaddlePosX+paddleWidth && nextBallPosY == playerPaddlePosY) {ballVelY*=-1;}
+
+    ballPosX = nextBallPosX;
+    ballPosY = nextBallPosY;
+ 
+    displayGame();
+  }
 }
