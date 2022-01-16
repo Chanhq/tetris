@@ -493,7 +493,7 @@ int main(int argc, char *argv[]) {
                             for (i8 x = 0; x<WIDTH; x++) {
                                 field[0*WIDTH + x] = 0;
                             }
-                            score += 100;
+                            score += 10;
                             //itoa(score, scoreString, 20);
                             //snprintf(scoreString,20, "%d", score);
                             SDL_RemoveTimer(fallTimer);
