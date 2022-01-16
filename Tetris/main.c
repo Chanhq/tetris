@@ -40,7 +40,7 @@ i32 fallSpeed = 600;
 //const i8 tSpawnPosY = -3;
 
 const i8 tSpawnPosX = WIDTH/2-1;
-const i8 tSpawnPosY = -3;
+const i8 tSpawnPosY = 0;
 
 //important variables to save information about the current, falling tetrino (t for tetrino)
 i8 tForm; //type of tetrino (0-6), defined as the index in the TETRINOS-list
@@ -61,7 +61,14 @@ i8 getRandom(int min, int max) {
     return rand()%(max-min + 1)+min;
 }
 
+i32 score = 0;
+
 struct Color {i32 r; i32 g; i32 b; i32 a;};
+
+struct Color diyBackgroundColor = {
+//  R     G     B     A (Alpha)
+    0x00, 0x00, 0x00, 0xFF,
+};
 
 const struct Color BASE_COLORS[] = {
     { 0x28, 0x28, 0x28, 0xFF }, 
@@ -110,6 +117,10 @@ void drawRect(i32 sx, i32 sy, i32 sw, i32 sh, struct Color color, i8 fill){
     }
 }
 
+void drawBackground(struct Color color) {
+    drawRect(0,0,SWIDTH,SHEIGHT,color,1);
+};
+
 void drawText(const char *text,i32 sx, i32 sy,i8 alignment,struct Color color){
     SDL_Color sdl_color = { color.r, color.g, color.b, color.a };
     SDL_Surface *surface = TTF_RenderText_Solid(font, text, sdl_color);
@@ -151,6 +162,7 @@ void drawBlock(i8 x, i8 y, i8 color){
     drawRect(sx + borderThickness, sy, SBLOCKWIDTH - borderThickness, SBLOCKWIDTH - borderThickness, light_color,1);
     drawRect(sx + borderThickness, sy + borderThickness, SBLOCKWIDTH - borderThickness * 2, SBLOCKWIDTH - borderThickness * 2, base_color,1);
 }
+
 
 int field[WIDTH*HEIGHT] = {
     0,0,0,0,0,0,0,0,0,0,
@@ -195,7 +207,8 @@ Uint32 generateUserEvent(Uint32 interval, void *param) {
 }
 
 i8 getBlock(i8 x, i8 y) {
-    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {return -1;}
+    if (x < 0 || x >= WIDTH || y >= HEIGHT) {return -1;}
+    else if (y<0) {return -2;}
     else {return field[y*WIDTH + x];}
 }
 
@@ -325,7 +338,7 @@ const i8 tFormWidth[7] = {4,2,3,3,3,3,3};
 
 void newTetrino() {
     tColor = getRandom(1,7);
-    tRot = getRandom(0,3);
+    tRot = 1; //getRandom(0,3);
     tForm = getRandom(0,6);
     if (tForm == 0) {
         tPosX = tSpawnPosX-2;
@@ -334,16 +347,32 @@ void newTetrino() {
     } else {
         tPosX = tSpawnPosX;
     }
-    
     tPosY = tSpawnPosY;
 }
 
 void drawTetrino() {
     for (i8 y = 0; y<tFormWidth[tForm]; y++) {
         for (i8 x = 0; x<tFormWidth[tForm]; x++) {
-            drawBlock(tPosX+x,tPosY+y,tForms[tForm][tRot][y * tFormWidth[tForm] + x] * tColor);
+            if (tForms[tForm][tRot][y * tFormWidth[tForm] + x] != 0) {
+                drawBlock(tPosX+x,tPosY+y,tForms[tForm][tRot][y * tFormWidth[tForm] + x] * tColor);
+            }
         }
     }
+}
+
+i8 collide(i8 tXTemp, i8 tYTemp, i8 tFormTemp, i8 tRotTemp) {
+    //returns 1 if tetrino collides, 0 if it doesn't collide
+    i8 doescollide = 0;
+
+    for (i8 y = 0; y<tFormWidth[tFormTemp]; y++) {
+        for (i8 x = 0; x<tFormWidth[tFormTemp];x++) {
+            if (tForms[tFormTemp][tRotTemp][y * tFormWidth[tFormTemp] + x] == 1 && tPosY>=0 && getBlock(tXTemp+x,tYTemp+y)!=0) {
+                doescollide = 1;
+            }
+        }
+    }
+    if (doescollide == 1) {return 1;}
+    else {return 0;}
 }
 
 int main(int argc, char *argv[]) {
@@ -357,7 +386,8 @@ int main(int argc, char *argv[]) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     fallTimer = SDL_AddTimer(fallSpeed, generateUserEvent, NULL);
 
-    SDL_ShowCursor(SDL_DISABLE);
+    //disable cursor
+    //SDL_ShowCursor(SDL_DISABLE);
 
     newTetrino();
 
@@ -365,7 +395,7 @@ int main(int argc, char *argv[]) {
     while (!close) {
         SDL_Event event;
  
-        // Events management
+        // Event management
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {close = 1;}
             if (event.type == SDL_KEYDOWN) {
@@ -373,22 +403,32 @@ int main(int argc, char *argv[]) {
                 switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_W:
                 case SDL_SCANCODE_UP:
-                    tRot++;
-                    if (tRot>3) {tRot = 0;}
-                    //Stück drehen
+                    //Rotate tetrino
+                    if (!collide(tPosX, tPosY, tForm, tRot+1)) {
+                        tRot++;
+                        if (tRot>3) {tRot = 0;}
+                    }
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
-                    //Stück schneller nach unten bewegen
-                    //if (getBlock(xPos, yPos+1)==0) {yPos += 1;}
+                    //Move tetrino faster down
+                    if (!collide(tPosX, tPosY+1, tForm, tRot)) {
+                        tPosY += 1;
+                    }
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                    //if (getBlock(xPos-1, yPos)==0) {xPos -= 1;}
+                    //Move tetrino left
+                    if (!collide(tPosX-1, tPosY, tForm, tRot)) {
+                        tPosX -= 1;
+                    }
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                    //if (getBlock(xPos+1,yPos)==0) {xPos += 1;}
+                    //Move tetrino right
+                    if (!collide(tPosX+1, tPosY, tForm, tRot)) {
+                        tPosX += 1;
+                    }
                     break;
                 }
             } else if (event.type == SDL_KEYUP) { 
@@ -407,36 +447,42 @@ int main(int argc, char *argv[]) {
                     break;
                 }
             } else if (event.type == SDL_USEREVENT) {
-                //newTetrino();
 
-                i8 collide = 0;
-                if (getBlock(tPosX,tPosY + tFormWidth[tForm]) != 0) {collide = 1;}
-
-                /*else { // collide with other blocks in the field
-                    for (int x = 0; x<WIDTH; x++) {
-                        if (field[(yPos + 1)*WIDTH + x]!=0 && xPos == x) {collide = 1;}
-                    }
-                }
-                */
-
-                if (collide) {
-                    field[(tPosY) *WIDTH + tPosX] = tColor;
-                    int lineComplete = 1;
-                    for (int x = 0; x<WIDTH; x++) {
-                        if (getBlock(x,tPosY)==0) {lineComplete = 0;} //line isnt complete
-                    }
-                    if (lineComplete) { //delete line
-                        for (int y = tPosY; y>0; y--) {
-                            for (int x = 0; x<WIDTH; x++) {
-                                field[y*WIDTH + x] = field[(y-1)*WIDTH + x];
+                if (collide(tPosX, tPosY+1, tForm, tRot)) {
+                    //Put tetrino into field as solid part
+                    for (i8 y = 0; y<tFormWidth[tForm]; y++) {
+                        for (i8 x = 0; x<tFormWidth[tForm]; x++) {
+                            if (tForms[tForm][tRot][y * tFormWidth[tForm] + x] != 0) {
+                                field[(tPosY+y) *WIDTH + (tPosX+x)] = tColor;
                             }
-                        }
-                        for (int x = 0; x<WIDTH; x++) {
-                            field[0*WIDTH + x] = 0;
                         }
                     }
                     
+                    //Delete line if line is complete (check every row)
+                    for (i8 y = 0; y < HEIGHT; y++) {
+                        i8 lineComplete = 1;
+                        for (i8 x = 0; x<WIDTH; x++) {
+                           if (getBlock(x,y)==0) {lineComplete = 0;} //line isnt complete
+                        }
+
+                        if (lineComplete) { 
+                            for (i8 yToShift = y; yToShift>0; yToShift--) {
+                                for (i8 x = 0; x<WIDTH; x++) {
+                                    field[yToShift*WIDTH + x] = field[(yToShift-1)*WIDTH + x];
+                                }
+                            }
+                            for (i8 x = 0; x<WIDTH; x++) {
+                                field[0*WIDTH + x] = 0;
+                            }
+                            score += 100;
+                        }
+                    }
+
                     newTetrino();
+                    if (collide(tPosX, tPosY, tForm, tRot)) {
+                        close = 1;
+                        printf("Score: %d\n", score);
+                    } //Game Over!
                 } else {
                     tPosY += 1;
                 }
@@ -444,11 +490,12 @@ int main(int argc, char *argv[]) {
         }
 
         SDL_RenderClear(renderer); //make screen black
+        drawBackground(diyBackgroundColor);
 
         
         for (int y = 0; y<HEIGHT; y++) {
             for (int x = 0; x<WIDTH; x++) {
-                drawBlock(x,y,getBlock(x,y)+2); //field blocks
+                drawBlock(x,y,getBlock(x,y)); //field blocks
             }
         }
         
