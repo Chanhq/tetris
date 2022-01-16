@@ -25,10 +25,8 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 - [X] Drehen der Blöcke
 
 ## Wichtige Extra-Funktionen
-[X] Erhöhung der Schwierigkeit, desto höher der Score
-	[X] Spiel wird schneller
-[X] Scoremanagement
-	[X] Für jede vollständige Zeile wird der Score größer
+- [X] Erhöhung der Schwierigkeit, desto höher der Score (Spiel wird schneller)
+- [X] Scoremanagement (Für jede vollständige Zeile wird der Score größer)
 - GUI im Spiel
 	- Label
 		- Aktueller Score (und Highscore)
