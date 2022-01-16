@@ -33,6 +33,7 @@ i8 tetrinoColor = 1; //has to be smaller than 8
 i8 backgroundBlockColor = 0;
 
 i32 fallSpeed = 600; 
+i32 fasterFallSpeed = 100;
 // if key s is not pressed: in double milliseconds (lower is faster)
 // if key s is     pressed: in        milliseconds (lower is faster)
 
@@ -63,11 +64,24 @@ i8 getRandom(int min, int max) {
 
 i32 score = 0;
 
+char scoreString[200];
+//sprintf(scoreString, "%d", score);
+
+i8 fasterTimer = 0;
+
+SDL_Color backgroundColor = {  0,  0,  0};
+SDL_Color frontColor = {255,0,0};
+
 struct Color {i32 r; i32 g; i32 b; i32 a;};
 
 struct Color diyBackgroundColor = {
 //  R     G     B     A (Alpha)
     0x00, 0x00, 0x00, 0xFF,
+};
+
+struct Color textColor = {
+//  R     G     B     A (Alpha)
+    0xFF, 0xFF, 0xFF, 0xFF,
 };
 
 const struct Color BASE_COLORS[] = {
@@ -163,7 +177,6 @@ void drawBlock(i8 x, i8 y, i8 color){
     drawRect(sx + borderThickness, sy + borderThickness, SBLOCKWIDTH - borderThickness * 2, SBLOCKWIDTH - borderThickness * 2, base_color,1);
 }
 
-
 int field[WIDTH*HEIGHT] = {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
@@ -186,9 +199,6 @@ int field[WIDTH*HEIGHT] = {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0
 };
-
-SDL_Color backgroundColor = {  0,  0,  0};
-SDL_Color frontColor = {255,0,0};
 
 Uint32 generateUserEvent(Uint32 interval, void *param) {
     SDL_Event event;
@@ -227,12 +237,12 @@ const i8 tForms[7][4][16] = {
         {0, 0, 0, 0,
          0, 0, 0, 0,
          1, 1, 1, 1,
-         0, 0, 0, 0}
+         0, 0, 0, 0},
 
         {0, 0, 1, 0,
          0, 0, 1, 0,
          0, 0, 1, 0,
-         0, 0, 1, 0},
+         0, 0, 1, 0}
     },
     { //1. tetrino: O
         {1, 1,
@@ -385,6 +395,8 @@ int main(int argc, char *argv[]) {
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SWIDTH, SHEIGHT,0 );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     fallTimer = SDL_AddTimer(fallSpeed, generateUserEvent, NULL);
+    //SDL_RemoveTimer(fallTimer);
+    //fallTimer = SDL_AddTimer(fasterFallSpeed, generateUserEvent, NULL);
 
     //disable cursor
     //SDL_ShowCursor(SDL_DISABLE);
@@ -412,8 +424,10 @@ int main(int argc, char *argv[]) {
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
                     //Move tetrino faster down
-                    if (!collide(tPosX, tPosY+1, tForm, tRot)) {
-                        tPosY += 1;
+                    if (fasterTimer == 0) {
+                        fasterTimer = 1;
+                        SDL_RemoveTimer(fallTimer);
+                        fallTimer = SDL_AddTimer(fasterFallSpeed, generateUserEvent, NULL);
                     }
                     break;
                 case SDL_SCANCODE_A:
@@ -441,6 +455,11 @@ int main(int argc, char *argv[]) {
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
+                    if (fasterTimer == 1) {
+                        fasterTimer = 0;
+                        SDL_RemoveTimer(fallTimer);
+                        fallTimer = SDL_AddTimer(fallSpeed, generateUserEvent, NULL);
+                    }
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
@@ -475,6 +494,14 @@ int main(int argc, char *argv[]) {
                                 field[0*WIDTH + x] = 0;
                             }
                             score += 100;
+                            //itoa(score, scoreString, 20);
+                            //snprintf(scoreString,20, "%d", score);
+                            SDL_RemoveTimer(fallTimer);
+                            if (fallSpeed>50) {
+                                fallSpeed -= 10;
+                                if (fasterFallSpeed>20) {fallSpeed -=10;}
+                            }
+                            fallTimer = SDL_AddTimer(fallSpeed, generateUserEvent, NULL);
                         }
                     }
 
@@ -500,6 +527,8 @@ int main(int argc, char *argv[]) {
         }
         
         drawTetrino();
+
+        //drawText(scoreString,SWIDTH-100, 40,-1,textColor);
 
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / maxFPS); // calculates to maxFPS
