@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h> // for initializing and shutdown functions
 #include <SDL2/SDL_image.h> // for rendering images and graphics on screen
 #include <SDL2/SDL_timer.h> // for using SDL_Delay() functions
+//#include <SDL_mixer.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -348,7 +349,7 @@ const i8 tFormWidth[7] = {4,2,3,3,3,3,3};
 
 void newTetrino() {
     tColor = getRandom(1,7);
-    tRot = 1; //getRandom(0,3);
+    tRot = 0; //getRandom(0,3);
     tForm = getRandom(0,6);
     if (tForm == 0) {
         tPosX = tSpawnPosX-2;
@@ -377,12 +378,11 @@ i8 collide(i8 tXTemp, i8 tYTemp, i8 tFormTemp, i8 tRotTemp) {
     for (i8 y = 0; y<tFormWidth[tFormTemp]; y++) {
         for (i8 x = 0; x<tFormWidth[tFormTemp];x++) {
             if (tForms[tFormTemp][tRotTemp][y * tFormWidth[tFormTemp] + x] == 1 && tPosY>=0 && getBlock(tXTemp+x,tYTemp+y)!=0) {
-                doescollide = 1;
+                return 1;
             }
         }
     }
-    if (doescollide == 1) {return 1;}
-    else {return 0;}
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
