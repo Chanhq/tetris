@@ -1,5 +1,0 @@
-How to Compile:
-
-1. Go to Library
-
-cc -o snake game.c `sdl2-config --cflags --libs`
