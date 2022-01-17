@@ -13,6 +13,14 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 
 # Planung / Zielsetzung: Tetris!
 
+## ToDo:
+- Score mit Label
+- Menü
+  - Highscores (Stats) ansehen
+  - Spiel starten
+- Nach dem Spiel Namen eingeben, um Highscore darunter zu speichern
+
+
 ## Notwendige Funktionen, damit das Programm funktioniert
 - [X] Speicherung der Blockmöglichkeiten
 - [x] Speicherung der temporen Blockverteilung im Spielfeld - durch Listen
