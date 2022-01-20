@@ -312,7 +312,8 @@ Uint32 generateUserEvent(Uint32 interval, void *param) {
 }
 
 i8 getBlock(i8 x, i8 y) {
-    if (x < 0 || x >= WIDTH || y<0 || y >= HEIGHT) {return -1;}
+    if (x < 0 || x >= WIDTH || y >= HEIGHT) {return -1;}
+    else if (y<0) {return 0;}
     else {return field[y*WIDTH + x];}
 }
 
@@ -419,7 +420,7 @@ int main(int argc, char *argv[]) {
 
                 if (fallFaster || fallTimer==0) {
                     if (collide(tPosX, tPosY+1, tForm, tRot)) {
-                        if (tPosY == 0) { //Game Over, when the tetrino detects a collision above the game field
+                        if (tPosY <= 0) { //Game Over, when the tetrino detects a collision above the game field
                             runGame = 0; //stop the game
                         }
 
@@ -473,14 +474,13 @@ int main(int argc, char *argv[]) {
         SDL_RenderClear(renderer); //make screen black
         drawBackground(black); //(0 is black, 1 is white, 2 is grey)
 
-        for (int x = 0; x<WIDTH; x++) {drawBlock(x,0,8);} //draw the first line red to show that there with be game over
+        for (int x = 0; x<WIDTH; x++) {drawBlock(x,0,8);} //draw the first line red to show that there with be game over        
 
         for (int y = 1; y<HEIGHT; y++) {
             for (int x = 0; x<WIDTH; x++) {
                 drawBlock(x,y,getBlock(x,y)); //field blocks
             }
         }
-        
         drawTetrino();
 
         drawText(scoreString,14, 12,-1,white); //scoreString
@@ -489,6 +489,8 @@ int main(int argc, char *argv[]) {
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / FPS);
     }
+
+    SDL_Delay(2000);
  
     //clean up
     SDL_DestroyRenderer(renderer);
