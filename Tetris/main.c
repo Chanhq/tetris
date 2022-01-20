@@ -41,6 +41,7 @@ Important to understand the code:
 
 #define FPS 30
 
+
 typedef int8_t i8;  //mostly used for ingame coords
 typedef int32_t i32; //mostly used for screen coords
 
