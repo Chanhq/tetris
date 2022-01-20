@@ -234,7 +234,7 @@ const struct Color blockColorsDark[] = { //r,g,b,a in hex
 
 
 //A lot of functions
-i8 getRandom(i8 min, i8 max) {
+i8 getRandom(i8 min, i8 max) { // min and max are in the interval
     return rand()%(max-min + 1)+min;
 }
 
@@ -339,6 +339,28 @@ void drawTetrino() {
     }
 }
 
+void gameOverAnimation() {
+    time_t old = time(NULL);
+    time_t now = time(NULL);
+    i8 run = 1;
+    while (difftime(now,old) <2 && run) {
+        now = time(NULL);
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) { // Go through every event which occured
+            if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {run = 0;}
+        }
+        SDL_RenderClear(renderer); //make screen black
+        drawBackground(black); //(0 is black, 1 is white, 2 is grey)
+        for (int y = 0; y<HEIGHT; y++) {
+            for (int x = 0; x<WIDTH; x++) {
+                drawBlock(x,y,getRandom(1,7)); //field blocks
+            }
+        }
+        SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
+        SDL_Delay(1000 / FPS);
+    }
+}
+
 i8 collide(i8 tXTemp, i8 tYTemp, i8 tFormTemp, i8 tRotTemp) { //returns 1 if tetrino collides, 0 if it doesn't collide
     for (i8 y = 0; y<tFormWidth[tFormTemp]; y++) {
         for (i8 x = 0; x<tFormWidth[tFormTemp];x++) {
@@ -358,6 +380,7 @@ int main(int argc, char *argv[]) {
     }
     TTF_Init();
 
+
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SWIDTH, SHEIGHT,0 );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     fastFallTimer = SDL_AddTimer(fasterFallSpeed, generateUserEvent, NULL);
@@ -368,6 +391,7 @@ int main(int argc, char *argv[]) {
 
     newTetrino();
 
+    
     i8 runGame = 1;
     while (runGame) {
         SDL_Event event;
@@ -422,6 +446,7 @@ int main(int argc, char *argv[]) {
                     if (collide(tPosX, tPosY+1, tForm, tRot)) {
                         if (tPosY <= 0) { //Game Over, when the tetrino detects a collision above the game field
                             runGame = 0; //stop the game
+                            gameOverAnimation();
                         }
 
                         //Put tetrino into field as solid part
@@ -489,8 +514,6 @@ int main(int argc, char *argv[]) {
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / FPS);
     }
-
-    SDL_Delay(2000);
  
     //clean up
     SDL_DestroyRenderer(renderer);
