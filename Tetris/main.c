@@ -47,9 +47,9 @@ typedef int32_t i32; //mostly used for screen coords
 
 //Info about the score
 i32 score = 0; //the variable which stores the current score
-const i32 scoreAddLineDone = 20; //how big the 
+const i32 scoreAddLineDone = 50; //how big the 
 const i32 scoreAddTetrinoFallDown = 1; 
-char scoreString[200];
+char scoreString[200] = {"Score: "};
 
 // Info about the current, falling tetrino
 const i8 tSpawnPosX = WIDTH/2-1;
@@ -257,7 +257,7 @@ void drawBackground(struct Color color) {
 };
 
 void drawText(const char *text,i32 sx, i32 sy,i8 alignment,struct Color color){
-    SDL_Color sdl_color = { color.r, color.g, color.b, color.a };
+    SDL_Color sdl_color = {color.r, color.g, color.b, color.a };
     SDL_Surface *surface = TTF_RenderText_Solid(font, text, sdl_color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_Rect rect;
@@ -356,13 +356,13 @@ int main(int argc, char *argv[]) {
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SWIDTH, SHEIGHT,0 );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     fastFallTimer = SDL_AddTimer(fasterFallSpeed, generateUserEvent, NULL);
-    font = TTF_OpenFont("./font/Sans.ttf", 24);
+    font = TTF_OpenFont("./font/PixelFont.ttf", 8);
 
     //disable cursor
     if (DISABLE_CURSOR) {SDL_ShowCursor(SDL_DISABLE);}
 
     newTetrino();
-
+    
     i8 runGame = 1;
     while (runGame) {
 
@@ -461,6 +461,9 @@ int main(int argc, char *argv[]) {
                 if (fallTimer >= FALLSPEED_FACTOR) {fallTimer = 0;}
 
                 if (fallFaster) {fallTimer = 1;}
+
+                //strcpy(&scoreString[7],"<Score>");
+                sprintf(&scoreString[7], "%d", score);
             }
         }
 
@@ -475,7 +478,7 @@ int main(int argc, char *argv[]) {
         
         drawTetrino();
 
-        //drawText(scoreString,SWIDTH-100, 40,-1,textColor);
+        drawText(scoreString,14, 12,-1,white);
 
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
         SDL_Delay(1000 / FPS); // calculates to maxFPS
