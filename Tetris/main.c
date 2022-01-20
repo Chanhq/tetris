@@ -342,7 +342,7 @@ void drawTetrino() {
 i8 collide(i8 tXTemp, i8 tYTemp, i8 tFormTemp, i8 tRotTemp) { //returns 1 if tetrino collides, 0 if it doesn't collide
     for (i8 y = 0; y<tFormWidth[tFormTemp]; y++) {
         for (i8 x = 0; x<tFormWidth[tFormTemp];x++) {
-            if (tForms[tFormTemp][tRotTemp][y * tFormWidth[tFormTemp] + x] == 1 && tPosY>=0 && getBlock(tXTemp+x,tYTemp+y)!=0) {
+            if (tForms[tFormTemp][tRotTemp][y * tFormWidth[tFormTemp] + x] == 1 && getBlock(tXTemp+x,tYTemp+y)!=0) {
                 return 1;
             }
         }
@@ -393,12 +393,12 @@ int main(int argc, char *argv[]) {
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
                     //Move tetrino left
-                    if (!collide(tPosX-1, tPosY, tForm, tRot)) {tPosX -= 1;}
+                    if (collide(tPosX-1, tPosY, tForm, tRot)==0) {tPosX -= 1;}
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
                     //Move tetrino right
-                    if (!collide(tPosX+1, tPosY, tForm, tRot)) {tPosX += 1;}
+                    if (collide(tPosX+1, tPosY, tForm, tRot)==0) {tPosX += 1;}
                     break;
                 }
             } else if (event.type == SDL_KEYUP) { 
