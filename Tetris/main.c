@@ -33,7 +33,7 @@ Important to understand the code:
 #define HEIGHT 20 //has to be a dividor of SHEIGHT
 
 #define SBLOCKWIDTH 30 //has to be a dividor of WIDTH and HEIGHT
-#define BORDER_THICKNESS SBLOCKWIDTH/8
+#define BORDER_THICKNESS 4
 
 #define DISABLE_CURSOR 1 //If !0, the Cursor is disabled, else the Cursor is enabled
 #define START_FASTER_FALLSPEED 100
@@ -362,7 +362,7 @@ int main(int argc, char *argv[]) {
     if (DISABLE_CURSOR) {SDL_ShowCursor(SDL_DISABLE);}
 
     newTetrino();
-    
+
     i8 runGame = 1;
     while (runGame) {
 
