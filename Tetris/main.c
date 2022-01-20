@@ -41,13 +41,12 @@ Important to understand the code:
 
 #define FPS 30
 
-
 typedef int8_t i8;  //mostly used for ingame coords
 typedef int32_t i32; //mostly used for screen coords
 
 //Info about the score
 i32 score = 0; //the variable which stores the current score
-const i32 scoreAddLineDone = 50; //how big the 
+const i32 scoreAddLineDone = 50; //how big the score should get when a line is complete
 const i32 scoreAddTetrinoFallDown = 1; 
 char scoreString[20] = {"Score: "}; //later in the code, the current score gets attached behind this string
 
@@ -260,6 +259,7 @@ void drawBackground(struct Color color) {
 };
 
 void drawText(const char *text,i32 sx, i32 sy,i8 alignment,struct Color color){
+    printf("Test in Text");
     SDL_Color sdl_color = {color.r, color.g, color.b, color.a };
     SDL_Surface *surface = TTF_RenderText_Solid(font, text, sdl_color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -370,7 +370,6 @@ int main(int argc, char *argv[]) {
 
     i8 runGame = 1;
     while (runGame) {
-
         SDL_Event event;
         while (SDL_PollEvent(&event)) { // Go through every event which occured
             if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {runGame = 0;}
@@ -468,17 +467,14 @@ int main(int argc, char *argv[]) {
 
                 if (fallFaster) {fallTimer = 1;}
 
-                //strcpy(&scoreString[7],"<Score>");
                 sprintf(&scoreString[7], "%d", score);
             }
         }
-
+        
         SDL_RenderClear(renderer); //make screen black
         drawBackground(black); //(0 is black, 1 is white, 2 is grey)
 
-        for (int x = 0; x<WIDTH; x++) {
-            drawBlock(x,0,8); //field blocks
-        }
+        for (int x = 0; x<WIDTH; x++) {drawBlock(x,0,8);} //draw the first line red to show that there with be game over
 
         for (int y = 1; y<HEIGHT; y++) {
             for (int x = 0; x<WIDTH; x++) {
@@ -488,13 +484,14 @@ int main(int argc, char *argv[]) {
         
         drawTetrino();
 
-        drawText(scoreString,14, 12,-1,white);
+        drawText(scoreString,14, 12,-1,white); //scoreString
+
 
         SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
-        SDL_Delay(1000 / FPS); // calculates to maxFPS
+        SDL_Delay(1000 / FPS);
     }
  
-    //tidy up
+    //clean up
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
