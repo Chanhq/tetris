@@ -259,7 +259,6 @@ void drawBackground(struct Color color) {
 };
 
 void drawText(const char *text,i32 sx, i32 sy,i8 alignment,struct Color color){
-    printf("Test in Text");
     SDL_Color sdl_color = {color.r, color.g, color.b, color.a };
     SDL_Surface *surface = TTF_RenderText_Solid(font, text, sdl_color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
