@@ -22,7 +22,7 @@ Important to understand the code:
 #include <SDL2/SDL.h> // general SDL graphics, sound, events library
 #include <SDL2/SDL_timer.h> // for SDL_Delay()
 #include <SDL2/SDL_mouse.h> // to work with the mouse (used to eventually disable it)
-#include <SDL2/SDL_ttf.h> //to show fonts
+#include <SDL2/SDL_ttf.h> //to show text
 #include <SDL_mixer.h> // for audio
 
 #define SWIDTH 320 //screen coord
@@ -36,8 +36,8 @@ Important to understand the code:
 #define BORDER_THICKNESS 4
 
 #define DISABLE_CURSOR 1 //If !0, the Cursor is disabled, else the Cursor is enabled
-#define START_FASTER_FALLSPEED 100
-#define FALLSPEED_FACTOR 6 //8 means, that the faster fall speed is 8 times faster than the normal fall speed
+#define START_FASTER_FALLSPEED 150
+#define FALLSPEED_FACTOR 4 //8 means, that the faster fall speed is 8 times faster than the normal fall speed
 
 #define FPS 30
 
@@ -49,7 +49,7 @@ typedef int32_t i32; //mostly used for screen coords
 i32 score = 0; //the variable which stores the current score
 const i32 scoreAddLineDone = 50; //how big the 
 const i32 scoreAddTetrinoFallDown = 1; 
-char scoreString[200] = {"Score: "};
+char scoreString[20] = {"Score: "}; //later in the code, the current score gets attached behind this string
 
 // Info about the current, falling tetrino
 const i8 tSpawnPosX = WIDTH/2-1;
@@ -207,7 +207,8 @@ const struct Color blockColorsBase[] = { //r,g,b,a in hex
     { 0x2D, 0x99, 0x51, 0xFF },
     { 0x99, 0x2D, 0x2D, 0xFF },
     { 0x2D, 0x63, 0x99, 0xFF },
-    { 0x99, 0x63, 0x2D, 0xFF }
+    { 0x99, 0x63, 0x2D, 0xFF },
+    { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 const struct Color blockColorsLight[] = { //r,g,b,a in hex
     { 0x28, 0x28, 0x28, 0xFF }, //background color
@@ -217,7 +218,8 @@ const struct Color blockColorsLight[] = { //r,g,b,a in hex
     { 0x44, 0xE5, 0x7A, 0xFF },
     { 0xE5, 0x44, 0x44, 0xFF },
     { 0x44, 0x95, 0xE5, 0xFF },
-    { 0xE5, 0x95, 0x44, 0xFF }
+    { 0xE5, 0x95, 0x44, 0xFF },
+    { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 const struct Color blockColorsDark[] = { //r,g,b,a in hex
     { 0x28, 0x28, 0x28, 0xFF }, //background color
@@ -227,7 +229,8 @@ const struct Color blockColorsDark[] = { //r,g,b,a in hex
     { 0x1E, 0x66, 0x36, 0xFF },
     { 0x66, 0x1E, 0x1E, 0xFF },
     { 0x1E, 0x42, 0x66, 0xFF },
-    { 0x66, 0x42, 0x1E, 0xFF }
+    { 0x66, 0x42, 0x1E, 0xFF },
+    { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 
 
@@ -348,9 +351,11 @@ i8 collide(i8 tXTemp, i8 tYTemp, i8 tFormTemp, i8 tRotTemp) { //returns 1 if tet
 }
 
 int main(int argc, char *argv[]) {
-    srand(time(NULL));
-    // returns zero on success else non-zero
-    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0) {printf("error initializing SDL: %s\n", SDL_GetError());}
+    srand(time(NULL)); // use the current time as the seed to generate random integers
+
+    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0) {
+        printf("error initializing SDL: %s\n", SDL_GetError());
+    }
     TTF_Init();
 
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SWIDTH, SHEIGHT,0 );
@@ -416,6 +421,10 @@ int main(int argc, char *argv[]) {
 
                 if (fallFaster || fallTimer==0) {
                     if (collide(tPosX, tPosY+1, tForm, tRot)) {
+                        if (tPosY == 0) { //Game Over, when the tetrino detects a collision above the game field
+                            runGame = 0; //stop the game
+                        }
+
                         //Put tetrino into field as solid part
                         for (i8 y = 0; y<tFormWidth[tForm]; y++) {
                             for (i8 x = 0; x<tFormWidth[tForm]; x++) {
@@ -441,16 +450,13 @@ int main(int argc, char *argv[]) {
                                 for (i8 x = 0; x<WIDTH; x++) {field[0*WIDTH + x] = 0;}
 
                                 score += scoreAddLineDone;
-                                fasterFallSpeed -= 1;
+                                fasterFallSpeed -= 2;
                                 SDL_RemoveTimer(fastFallTimer);
                                 fastFallTimer = SDL_AddTimer(fasterFallSpeed, generateUserEvent, NULL);
                             }
                         }
                         newTetrino();
                         fallTimer = 0;
-                        if (collide(tPosX, tPosY, tForm, tRot)) { //Game Over!
-                            runGame = 0; //stop the game
-                        }
                     } else {
                         tPosY += 1;
                         score += scoreAddTetrinoFallDown;
@@ -470,7 +476,11 @@ int main(int argc, char *argv[]) {
         SDL_RenderClear(renderer); //make screen black
         drawBackground(black); //(0 is black, 1 is white, 2 is grey)
 
-        for (int y = 0; y<HEIGHT; y++) {
+        for (int x = 0; x<WIDTH; x++) {
+            drawBlock(x,0,8); //field blocks
+        }
+
+        for (int y = 1; y<HEIGHT; y++) {
             for (int x = 0; x<WIDTH; x++) {
                 drawBlock(x,y,getBlock(x,y)); //field blocks
             }
@@ -489,6 +499,5 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    printf("Score: %d\n", score);
     return 0;
 }

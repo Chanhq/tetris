@@ -37,6 +37,7 @@
     "string": "c",
     "string_view": "c",
     "vector": "c",
-    "time.h": "c"
+    "time.h": "c",
+    "locale": "c"
   }
 }
