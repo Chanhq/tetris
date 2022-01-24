@@ -1,6 +1,8 @@
 # simple-tetris-game-in-c
 Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt, in dem wir im 3er-Team unsere Skills zeigen sollen.
 
+Es ist fertig und wir haben bestanden!
+
 
 # Important links
 
@@ -12,12 +14,6 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 
 
 # Planung / Zielsetzung: Tetris!
-
-## ToDo:
-- Score mit Label
-- Menü
-  - Spiel starten
-
 
 ## Notwendige Funktionen, damit das Programm funktioniert
 - [X] Speicherung der Blockmöglichkeiten
