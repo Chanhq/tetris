@@ -104,6 +104,30 @@ i8 fallTimer = 0; //the temporary variable to count down from fallSpeedFactor do
 
 //Info about the tetrinos and the field
 i8 field[WIDTH*HEIGHT] = {0}; //All blocks are 0 (air) at the beginning
+
+i8 menuField[WIDTH*HEIGHT] = {
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,2,0,0,0,0,0,0,0,
+    0,0,2,2,0,0,3,0,0,0,
+    0,0,0,2,0,3,3,3,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,1,1,1,1,0,4,0,0,
+    0,0,0,0,0,0,0,4,0,0,
+    0,0,5,5,0,0,4,4,0,0,
+    0,0,5,5,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+}; //All blocks are 0 (air) at the beginning
 const i8 tFormWidth[7] = {4,2,3,3,3,3,3};
 const i8 tForms[7][4][16] = {
     { //0. tetrino: I
@@ -232,7 +256,7 @@ const struct Color black = {0x00, 0x00, 0x00, 0xFF};
 const struct Color white = {0xFF, 0xFF, 0xFF, 0xFF};
 
 const struct Color blockColorsBase[] = { //r,g,b,a in hex
-    { 0x00, 0x00, 0x00, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
+    { 0x30, 0x30, 0x30, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
     { 0x2D, 0x99, 0x99, 0xFF },
     { 0x99, 0x99, 0x2D, 0xFF },
     { 0x99, 0x2D, 0x99, 0xFF },
@@ -243,7 +267,7 @@ const struct Color blockColorsBase[] = { //r,g,b,a in hex
     { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 const struct Color blockColorsLight[] = { //r,g,b,a in hex
-    { 0x00, 0x00, 0x00, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
+    { 0x40, 0x40, 0x40, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
     { 0x44, 0xE5, 0xE5, 0xFF },
     { 0xE5, 0xE5, 0x44, 0xFF },
     { 0xE5, 0x44, 0xE5, 0xFF },
@@ -254,7 +278,7 @@ const struct Color blockColorsLight[] = { //r,g,b,a in hex
     { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 const struct Color blockColorsDark[] = { //r,g,b,a in hex
-    { 0x00, 0x00, 0x00, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
+    { 0x10, 0x10, 0x10, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
     { 0x1E, 0x66, 0x66, 0xFF },
     { 0x66, 0x66, 0x1E, 0xFF },
     { 0x66, 0x1E, 0x66, 0xFF },
@@ -433,6 +457,13 @@ int main(int argc, char *argv[]) {
     bigFont = TTF_OpenFont("./font/PixelFont.ttf", 19);
     titleFont = TTF_OpenFont("./font/PixelFont.ttf", 40);
 
+
+    if (font == NULL){
+		printf("'PixelFont.ttf' in folder './font/' was not found\n");
+		return 1;
+	}	
+	//We n
+
     //disable cursor
     if (DISABLE_CURSOR) {SDL_ShowCursor(SDL_DISABLE);}
     
@@ -467,6 +498,12 @@ int main(int argc, char *argv[]) {
             SDL_RenderClear(renderer); //make screen black
             drawBackground(black); //(0 is black, 1 is white, 2 is grey)
 
+            for (int y = 0; y<HEIGHT; y++) {
+                for (int x = 0; x<WIDTH; x++) {
+                    drawBlock(x,y,menuField[y*WIDTH +x]);
+                }
+            }
+
             drawText("Tetris",50, 300,-1,white,titleFont); //Selected "Start" button
 
             if (selected == 0) { //Selected Start button
@@ -496,6 +533,12 @@ int main(int argc, char *argv[]) {
 
             SDL_RenderClear(renderer); //make screen black
             drawBackground(black); //0 is black, 1 is white, 2 is grey
+
+            for (int y = 0; y<HEIGHT; y++) {
+                for (int x = 0; x<WIDTH; x++) {
+                    drawBlock(x,y,0);
+                }
+            }
 
             drawText("Tetris",50, 100,-1,white,titleFont); //Selected "Start" button
             drawText("Credits",100, 200,-1,white,bigFont); //Selected "Start" button
@@ -605,28 +648,29 @@ int main(int argc, char *argv[]) {
 
                     fallTimer += 1;
                     if (fallTimer >= FALLSPEED_FACTOR) {fallTimer = 0;}
-
                     if (fallFaster) {fallTimer = 1;}
-
                     sprintf(&scoreString[7], "%d", score);
                 }
             }
             
             SDL_RenderClear(renderer); //make screen black
-            drawBackground(white); 
+            drawBackground(black); 
 
-            for (int y = 0; y<HEIGHT; y++) {
+            for (int x = 0; x<WIDTH; x++) {
+                drawBlock(x,-1,0); //field blocks
+            }
+
+            for (int y = -1; y<HEIGHT; y++) {
                 for (int x = 0; x<WIDTH; x++) {
                     drawBlock(x,y,getBlock(x,y)); //field blocks
                 }
             }
 
-            drawRect(SOFFSETSX,0,SWIDTH-2*SOFFSETSX, SOFFSETSY, black, 1);
+            //drawRect(SOFFSETSX,0,SWIDTH-2*SOFFSETSX, SOFFSETSY, black, 1);
 
             drawTetrino();
 
             drawText(scoreString,14, 12,-1,white,font); //scoreString
-
 
             SDL_RenderPresent(renderer); // triggers the double buffers for multiple rendering
             SDL_Delay(1000 / FPS);
@@ -634,6 +678,9 @@ int main(int argc, char *argv[]) {
     }
  
     //clean up
+    TTF_CloseFont(font);
+    TTF_CloseFont(bigFont);
+    TTF_CloseFont(titleFont);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
