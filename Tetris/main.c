@@ -15,7 +15,6 @@ Important to understand the code:
 *//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,6 +128,8 @@ i8 menuField[WIDTH*HEIGHT] = {
     0,0,0,0,0,0,0,0,0,0,
 }; //All blocks are 0 (air) at the beginning
 const i8 tFormWidth[7] = {4,2,3,3,3,3,3};
+
+
 const i8 tForms[7][4][16] = {
     { //0. tetrino: I
         {0, 0, 0, 0,
@@ -267,7 +268,7 @@ const struct Color blockColorsBase[] = { //r,g,b,a in hex
     { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 const struct Color blockColorsLight[] = { //r,g,b,a in hex
-    { 0x40, 0x40, 0x40, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
+    { 0x25, 0x25, 0x25, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
     { 0x44, 0xE5, 0xE5, 0xFF },
     { 0xE5, 0xE5, 0x44, 0xFF },
     { 0xE5, 0x44, 0xE5, 0xFF },
@@ -278,7 +279,7 @@ const struct Color blockColorsLight[] = { //r,g,b,a in hex
     { 0x60, 0x20, 0x20, 0xFF } //red color to show that a collision quits the game
 };
 const struct Color blockColorsDark[] = { //r,g,b,a in hex
-    { 0x10, 0x10, 0x10, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
+    { 0x35, 0x35, 0x35, 0xFF }, //{ 0x28, 0x28, 0x28, 0xFF }, //background color
     { 0x1E, 0x66, 0x66, 0xFF },
     { 0x66, 0x66, 0x1E, 0xFF },
     { 0x66, 0x1E, 0x66, 0xFF },
@@ -400,12 +401,13 @@ void gameOverAnimation() {
     time_t old = time(NULL);
     time_t now = time(NULL);
     i8 run = 1;
-    while (difftime(now,old) <2 && run) {
+    while (difftime(now,old) < 2 && run) {
         now = time(NULL);
         SDL_Event event;
         while (SDL_PollEvent(&event)) { // Go through every event which occured
             if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {run = 0;}
         }
+
         SDL_RenderClear(renderer); //make screen black
         drawBackground(black); //(0 is black, 1 is white, 2 is grey)
         for (int y = 0; y<HEIGHT; y++) {
@@ -452,17 +454,17 @@ int main(int argc, char *argv[]) {
 
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,SWIDTH, SHEIGHT,0 );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
     fastFallTimer = SDL_AddTimer(fasterFallSpeed, generateUserEvent, NULL);
+    
     font = TTF_OpenFont("./font/PixelFont.ttf", 14);
     bigFont = TTF_OpenFont("./font/PixelFont.ttf", 19);
     titleFont = TTF_OpenFont("./font/PixelFont.ttf", 40);
 
-
     if (font == NULL){
 		printf("'PixelFont.ttf' in folder './font/' was not found\n");
 		return 1;
-	}	
-	//We n
+    }
 
     //disable cursor
     if (DISABLE_CURSOR) {SDL_ShowCursor(SDL_DISABLE);}
