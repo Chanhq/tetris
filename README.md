@@ -51,7 +51,7 @@ Es ist fertig und wir haben bestanden!
 ## Optionale Dekorationen
 - Highscoremanagement (Speichern des Highscore, auch wenn das Programm beendet ist)
 - Auf ATtiny portieren
-[X] Bessere Texturen / Farben
+- [X] Bessere Texturen / Farben
 - Coole Animationen
 - Hintergrundmusik
 
