@@ -1,6 +1,8 @@
 # simple-tetris-game-in-c
 Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt, in dem wir im 3er-Team unsere Skills zeigen sollen.
 
+Es ist fertig und wir haben bestanden!
+
 
 # Important links
 
@@ -12,14 +14,6 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 
 
 # Planung / Zielsetzung: Tetris!
-
-## ToDo:
-- Score mit Label
-- Menü
-  - Highscores (Stats) ansehen
-  - Spiel starten
-- Nach dem Spiel Namen eingeben, um Highscore darunter zu speichern
-
 
 ## Notwendige Funktionen, damit das Programm funktioniert
 - [X] Speicherung der Blockmöglichkeiten
@@ -35,12 +29,12 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 ## Wichtige Extra-Funktionen
 - [X] Erhöhung der Schwierigkeit, desto höher der Score (Spiel wird schneller)
 - [X] Scoremanagement (Für jede vollständige Zeile wird der Score größer)
-- GUI im Spiel
+- [X] GUI im Spiel
 	- Label
 		- Aktueller Score (und Highscore)
 		- Anzeige des nächsten Blocks
 		- Eventuell Anzeige von temporären Spiel-Statistiken
-- Eingangsmenü
+- [X] Eingangsmenü
 	- Titellogo
 	- Knöpfe
 		- Spiel starten
@@ -57,7 +51,7 @@ Die Beschreibung sagt's schon, aber nochmal im Kontext: Das ist ein Uni-Projekt,
 ## Optionale Dekorationen
 - Highscoremanagement (Speichern des Highscore, auch wenn das Programm beendet ist)
 - Auf ATtiny portieren
-- Bessere Texturen / Farben
+- [X] Bessere Texturen / Farben
 - Coole Animationen
 - Hintergrundmusik
 
